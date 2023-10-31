@@ -1,0 +1,146 @@
+version: "3"
+services:
+    # mym-rabbitmq:
+    #     image: rabbitmq:management
+    #     container_name: mym-rabbitmq
+    #     ports:
+    #         - "15672:15672"
+    #         - "5672:5672"
+    #     restart: unless-stopped
+    #     networks:
+    #         - mym-network
+    #     healthcheck:
+    #         test: ["CMD", "rabbitmqctl", "status"]
+    #         interval: 10s
+    #         timeout: 2s
+    #         retries: 5
+    #         start_period: 10s
+    mym-config-server:
+        image: rkumar0206/mym-config-server:v1.0.0
+        container_name: mym-config-server
+        restart: unless-stopped
+        ports:
+            - "8727:8727"
+        networks:
+            - mym-network
+        environment:
+            - config.branch=docker-config-changes-and-other-changes
+        healthcheck:
+            test: wget --no-verbose --tries=1 --spider localhost:8727/actuator/health || exit 1
+            interval: 10s
+            timeout: 2s
+            retries: 5
+            start_period: 10s
+    mym-discovery-server:
+        image: rkumar0206/mym-discovery-server:v1.0.0
+        container_name: mym-discovery-server
+        depends_on:
+            mym-config-server:
+                condition: service_healthy
+        restart: unless-stopped
+        ports:
+            - "8845:8845"
+        networks:
+            - mym-network
+        environment:
+            - config.server.host=mym-config-server
+            - config.server.port=8727
+        healthcheck:
+            test: ["CMD", "nc", "-z", "localhost", "8845"]  # if port is accessible then considering it as healthy (Note: we can use wget and check for health url, but then we need to expose the username and password as it uses spring security (wget --no-verbose --tries=1 --spider http://rkumar0206:123456789PPP@localhost:8845/actuator/health || exit 1))
+            interval: 10s
+            timeout: 2s
+            retries: 5
+            start_period: 10s
+    mym-api-gateway:
+        image: rkumar0206/mym-api-gateway:v1.0.0
+        container_name: mym-api-gateway
+        depends_on:
+            mym-discovery-server:
+                condition: service_healthy
+        restart: unless-stopped
+        ports:
+            - "8562:8562"
+        networks:
+            - mym-network
+        environment:
+            - config.server.host=mym-config-server
+            - config.server.port=8727
+            - discovery.name=mym-discovery-server
+            - discovery.port=8845
+        healthcheck:
+            test: wget --no-verbose --tries=1 --spider localhost:8562/actuator/health || exit 1
+            interval: 10s
+            timeout: 2s
+            retries: 5
+            start_period: 10s
+    mym-user-authentication-service:
+        image: rkumar0206/mym-user-authentication-service:v1.0.0
+        container_name: mym-user-authentication-service
+        depends_on:
+            mym-api-gateway:
+                condition: service_healthy
+        restart: unless-stopped
+        networks:
+            - mym-network
+        environment:
+            - config.server.host=mym-config-server
+            - config.server.port=8727
+            - discovery.name=mym-discovery-server
+            - discovery.port=8845
+            - rabbitmqserver.host=mym-rabbitmq
+            - raabitmqserver.port=5672
+        healthcheck:
+            test: wget --no-verbose --tries=1 --spider localhost:8080/actuator/health || exit 1
+            interval: 10s
+            timeout: 2s
+            retries: 5
+            start_period: 10s
+    mym-email-and-notification-service:
+        image: rkumar0206/mym-email-and-notification-service:v1.0.0
+        container_name: mym-email-and-notification-service
+        depends_on:
+            mym-user-authentication-service:
+                condition: service_healthy
+        restart: unless-stopped
+        networks:
+            - mym-network
+        environment:
+            - config.server.host=mym-config-server
+            - config.server.port=8727
+            - discovery.name=mym-discovery-server
+            - discovery.port=8845
+            - rabbitmqserver.host=mym-rabbitmq
+            - raabitmqserver.port=5672
+    mym-expense-service:
+        image: rkumar0206/mym-expense-service:v1.0.0
+        container_name: mym-expense-service
+        depends_on:
+            mym-api-gateway:
+                condition: service_healthy
+        restart: unless-stopped
+        networks:
+            - mym-network
+        environment:
+            - config.server.host=mym-config-server
+            - config.server.port=8727
+            - discovery.name=mym-discovery-server
+            - discovery.port=8845
+    mym-expense-category-service:
+        image: rkumar0206/mym-expense-category-service:v1.0.0
+        container_name: mym-expense-category-service
+        depends_on:
+            mym-api-gateway:
+                condition: service_healthy
+        restart: unless-stopped
+        networks:
+            - mym-network
+        environment:
+            - config.server.host=mym-config-server
+            - config.server.port=8727
+            - discovery.name=mym-discovery-server
+            - discovery.port=8845
+networks:
+    mym-network:
+        driver: bridge
+        name: mym-network
+        external: true

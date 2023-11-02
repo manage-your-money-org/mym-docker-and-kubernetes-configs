@@ -27,10 +27,10 @@ services:
             - config.branch=docker-config-changes-and-other-changes
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8727/mym/mym-config-server/actuator/health || exit 1
-            interval: 10s
-            timeout: 2s
+            interval: 30s
+            timeout: 30s
             retries: 5
-            start_period: 10s
+            start_period: 50s
     mym-discovery-server:
         image: rkumar0206/mym-discovery-server:v1.0.1
         container_name: mym-discovery-server
@@ -47,10 +47,10 @@ services:
             - config.server.port=8727
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8845/mym/mym-discovery-server/actuator/health || exit 1
-            interval: 10s
-            timeout: 2s
+            interval: 30s
+            timeout: 30s
             retries: 5
-            start_period: 10s
+            start_period: 50s
     mym-api-gateway:
         image: rkumar0206/mym-api-gateway:v1.0.1
         container_name: mym-api-gateway
@@ -69,10 +69,10 @@ services:
             - discovery.port=8845
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8562/mym/mym-api-gateway/actuator/health || exit 1
-            interval: 10s
-            timeout: 2s
+            interval: 30s
+            timeout: 30s
             retries: 5
-            start_period: 10s
+            start_period: 50s
     mym-user-authentication-service:
         image: rkumar0206/mym-user-authentication-service:v1.0.1
         container_name: mym-user-authentication-service
@@ -91,10 +91,10 @@ services:
             - raabitmqserver.port=5672
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8080/mym/mym-user-authentication-service/actuator/health || exit 1
-            interval: 10s
-            timeout: 2s
+            interval: 30s
+            timeout: 30s
             retries: 5
-            start_period: 10s
+            start_period: 50s
     mym-email-and-notification-service:
         image: rkumar0206/mym-email-and-notification-service:v1.0.1
         container_name: mym-email-and-notification-service

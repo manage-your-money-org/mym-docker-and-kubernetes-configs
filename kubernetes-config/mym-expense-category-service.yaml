@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mym-expense-category-service
+  labels:
+    app: mym-expense-category-service
+spec:
+  containers:
+  - name: mym-expense-category-service
+    image: rkumar0206/mym-expense-category-service:v1.0.1
+    env:
+      - name: config.server.host
+        value: service-mym-config
+      - name: config.server.port
+        value: "8727"
+      - name: discovery.name
+        value: service-mym-discovery-server
+      - name: discovery.port
+        value: "8845"

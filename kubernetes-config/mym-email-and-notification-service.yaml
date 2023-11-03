@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mym-email-and-notification-service
+  labels:
+    app: mym-email-and-notification-service
+spec:
+  containers:
+  - name: mym-email-and-notification-service
+    image: rkumar0206/mym-email-and-notification-service:v1.0.1
+    env:
+      - name: config.server.host
+        value: service-mym-config
+      - name: config.server.port
+        value: "8727"
+      - name: discovery.name
+        value: service-mym-discovery-server
+      - name: discovery.port
+        value: "8845"
+      - name: rabbitmqserver.host
+        value: service-mym-rabbitmq
+      - name: raabitmqserver.port
+        value: "5672"
+      - name: mym-gateway.host
+        valueFrom:
+          fieldRef:
+            fieldPath: status.hostIP    # Get the host IP of the node
+      - name: mym-gateway.port
+        value: "30562"

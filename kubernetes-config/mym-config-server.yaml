@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mym-config-server
+  labels:
+    app: mym-config-server
+spec:
+  containers:
+  - name: mym-config-server
+    image: rkumar0206/mym-config-server:v1.0.1
+    env:
+      - name: config.branch
+        value: docker-config-changes-and-other-changes
+    ports:
+      - containerPort: 8727
+        name: config-port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-mym-config
+spec:
+  selector:
+    app: mym-config-server
+  ports:
+    - protocol: TCP
+      port: 8727
+      targetPort: config-port

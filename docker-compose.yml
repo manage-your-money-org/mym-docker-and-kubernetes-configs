@@ -1,20 +1,20 @@
 version: "3"
 services:
-    # mym-rabbitmq:
-    #     image: rabbitmq:management
-    #     container_name: mym-rabbitmq
-    #     ports:
-    #         - "15672:15672"
-    #         - "5672:5672"
-    #     restart: unless-stopped
-    #     networks:
-    #         - mym-network
-    #     healthcheck:
-    #         test: ["CMD", "rabbitmqctl", "status"]
-    #         interval: 10s
-    #         timeout: 2s
-    #         retries: 5
-    #         start_period: 10s
+    mym-rabbitmq:
+        image: rabbitmq:management
+        container_name: mym-rabbitmq
+        ports:
+            - "15672:15672"
+            - "5672:5672"
+        restart: unless-stopped
+        networks:
+            - mym-network
+        healthcheck:
+            test: ["CMD", "rabbitmqctl", "status"]
+            interval: 30s
+            timeout: 30s
+            retries: 5
+            start_period: 50s
     mym-config-server:
         image: rkumar0206/mym-config-server:v1.0.1
         container_name: mym-config-server
@@ -52,10 +52,12 @@ services:
             retries: 5
             start_period: 50s
     mym-api-gateway:
-        image: rkumar0206/mym-api-gateway:v1.0.1
+        image: rkumar0206/mym-api-gateway:v1.1.0
         container_name: mym-api-gateway
         depends_on:
             mym-discovery-server:
+                condition: service_healthy
+            mym-rabbitmq:
                 condition: service_healthy
         restart: unless-stopped
         ports:
@@ -67,6 +69,10 @@ services:
             - config.server.port=8727
             - discovery.name=mym-discovery-server
             - discovery.port=8845
+            - rabbitmqserver.host=mym-rabbitmq
+            - rabbitmqserver.port=5672
+            - rabbitmqserver.management.api.port=15672
+            - rabbitmqserver.env=mym-evn-testing
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8562/mym/mym-api-gateway/actuator/health || exit 1
             interval: 30s
@@ -88,7 +94,8 @@ services:
             - discovery.name=mym-discovery-server
             - discovery.port=8845
             - rabbitmqserver.host=mym-rabbitmq
-            - raabitmqserver.port=5672
+            - rabbitmqserver.port=5672
+            - rabbitmqserver.env=mym-evn-testing
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8080/mym/mym-user-authentication-service/actuator/health || exit 1
             interval: 30s
@@ -110,7 +117,8 @@ services:
             - discovery.name=mym-discovery-server
             - discovery.port=8845
             - rabbitmqserver.host=mym-rabbitmq
-            - raabitmqserver.port=5672
+            - rabbitmqserver.port=5672
+            - rabbitmqserver.env=mym-evn-testing
     mym-expense-service:
         image: rkumar0206/mym-expense-service:v1.0.1
         container_name: mym-expense-service
@@ -143,4 +151,3 @@ networks:
     mym-network:
         driver: bridge
         name: mym-network
-        external: true

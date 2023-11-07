@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: mym-api-gateway-replicaset
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mym-api-gateway
+  template:
+    metadata:
+      labels:
+        app: mym-api-gateway
+    spec:
+      containers:
+      - name: mym-api-gateway
+        image: rkumar0206/mym-api-gateway:v1.0.1
+        env:
+          - name: config.server.host
+            value: service-mym-config
+          - name: config.server.port
+            value: "8727"
+          - name: discovery.name
+            value: service-mym-discovery-server
+          - name: discovery.port
+            value: "8845"
+        ports:
+          - containerPort: 8562
+            name: gateway-port
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-mym-api-gateway
+spec:
+  type: NodePort
+  selector:
+    app: mym-api-gateway
+  ports:
+    - protocol: TCP
+      port: 8562
+      targetPort: gateway-port
+      nodePort: 30562

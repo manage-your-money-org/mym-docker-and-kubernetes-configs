@@ -16,7 +16,7 @@ services:
             retries: 5
             start_period: 50s
     mym-config-server:
-        image: rkumar0206/mym-config-server:v1.0.1
+        image: rkumar0206/mym-config-server:v1.1.0
         container_name: mym-config-server
         restart: unless-stopped
         ports:
@@ -24,7 +24,7 @@ services:
         networks:
             - mym-network
         environment:
-            - config.branch=docker-config-changes-and-other-changes
+            - config.branch=2-add-cookies-and-logout-configs
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8727/mym/mym-config-server/actuator/health || exit 1
             interval: 30s
@@ -52,7 +52,7 @@ services:
             retries: 5
             start_period: 50s
     mym-api-gateway:
-        image: rkumar0206/mym-api-gateway:v1.1.0
+        image: rkumar0206/mym-api-gateway:v1.2.0
         container_name: mym-api-gateway
         depends_on:
             mym-discovery-server:
@@ -80,7 +80,7 @@ services:
             retries: 5
             start_period: 50s
     mym-user-authentication-service:
-        image: rkumar0206/mym-user-authentication-service:v1.0.1
+        image: rkumar0206/mym-user-authentication-service:v1.1.0
         container_name: mym-user-authentication-service
         depends_on:
             mym-api-gateway:
@@ -88,6 +88,8 @@ services:
         restart: unless-stopped
         networks:
             - mym-network
+        ports:
+            - "8846:8080"
         environment:
             - config.server.host=mym-config-server
             - config.server.port=8727
@@ -103,7 +105,7 @@ services:
             retries: 5
             start_period: 50s
     mym-email-and-notification-service:
-        image: rkumar0206/mym-email-and-notification-service:v1.0.1
+        image: rkumar0206/mym-email-and-notification-service:v1.1.0
         container_name: mym-email-and-notification-service
         depends_on:
             mym-user-authentication-service:
@@ -120,7 +122,7 @@ services:
             - rabbitmqserver.port=5672
             - rabbitmqserver.env=mym-evn-testing
     mym-expense-service:
-        image: rkumar0206/mym-expense-service:v1.0.1
+        image: rkumar0206/mym-expense-service:v1.1.0
         container_name: mym-expense-service
         depends_on:
             mym-api-gateway:
@@ -128,13 +130,15 @@ services:
         restart: unless-stopped
         networks:
             - mym-network
+        ports:
+            - "8687:8080"
         environment:
             - config.server.host=mym-config-server
             - config.server.port=8727
             - discovery.name=mym-discovery-server
             - discovery.port=8845
     mym-expense-category-service:
-        image: rkumar0206/mym-expense-category-service:v1.0.1
+        image: rkumar0206/mym-expense-category-service:v1.1.0
         container_name: mym-expense-category-service
         depends_on:
             mym-api-gateway:
@@ -142,6 +146,8 @@ services:
         restart: unless-stopped
         networks:
             - mym-network
+        ports:
+            - "8973:8080"
         environment:
             - config.server.host=mym-config-server
             - config.server.port=8727

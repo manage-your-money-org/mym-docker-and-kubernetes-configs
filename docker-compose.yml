@@ -16,7 +16,7 @@ services:
             retries: 5
             start_period: 50s
     mym-config-server:
-        image: rkumar0206/mym-config-server:v1.1.0
+        image: rkumar0206/mym-config-server:v1.2.0
         container_name: mym-config-server
         restart: unless-stopped
         ports:
@@ -83,7 +83,9 @@ services:
         image: rkumar0206/mym-user-authentication-service:v1.1.0
         container_name: mym-user-authentication-service
         depends_on:
-            mym-api-gateway:
+            mym-discovery-server:
+                condition: service_healthy
+            mym-rabbitmq:
                 condition: service_healthy
         restart: unless-stopped
         networks:
@@ -122,10 +124,10 @@ services:
             - rabbitmqserver.port=5672
             - rabbitmqserver.env=mym-evn-testing
     mym-expense-service:
-        image: rkumar0206/mym-expense-service:v1.1.0
+        image: rkumar0206/mym-expense-service:v1.1.1
         container_name: mym-expense-service
         depends_on:
-            mym-api-gateway:
+            mym-discovery-server:
                 condition: service_healthy
         restart: unless-stopped
         networks:
@@ -141,7 +143,7 @@ services:
         image: rkumar0206/mym-expense-category-service:v1.1.0
         container_name: mym-expense-category-service
         depends_on:
-            mym-api-gateway:
+            mym-discovery-server:
                 condition: service_healthy
         restart: unless-stopped
         networks:

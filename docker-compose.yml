@@ -124,7 +124,7 @@ services:
             - rabbitmqserver.port=5672
             - rabbitmqserver.env=mym-evn-testing
     mym-expense-service:
-        image: rkumar0206/mym-expense-service:v1.1.1
+        image: rkumar0206/mym-expense-service:v1.1.2
         container_name: mym-expense-service
         depends_on:
             mym-discovery-server:

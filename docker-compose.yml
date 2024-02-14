@@ -16,7 +16,7 @@ services:
             retries: 5
             start_period: 50s
     mym-config-server:
-        image: rkumar0206/mym-config-server:v1.2.0
+        image: rkumar0206/mym-config-server:v1.3.0
         container_name: mym-config-server
         restart: unless-stopped
         ports:
@@ -24,7 +24,10 @@ services:
         networks:
             - mym-network
         environment:
-            - config.branch=2-add-cookies-and-logout-configs
+            - config.branch=main
+            - github.username=rkumar0206
+            - github.password.token=GITHUB_PASSWORD
+            - encryption.secret.key=ENCRYPTION_SECRET_KEY
         healthcheck:
             test: wget --no-verbose --tries=1 --spider localhost:8727/mym/mym-config-server/actuator/health || exit 1
             interval: 30s
